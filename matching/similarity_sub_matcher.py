@@ -3,7 +3,7 @@ from matching.sub_matcher import SubMatcher
 from dataclasses import dataclass
 from typing import List, Set
 from nltk.stem import SnowballStemmer
-from nltk import word_tokenize
+from stemmer import Stemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -33,17 +33,8 @@ class SimilaritySubMatcher(SubMatcher):
         _STOPWORDS: Set[str] = set(json.load(file))
 
     def match(self, keywords: List[str], texts: List[str], parameters: Parameters) -> Result:  # type: ignore
-        keyword_stems = [
-            self._STEMMER.stem(keyword).lower()
-            for keyword in keywords
-        ]
-        text_stems = [
-            " ".join(
-                self._STEMMER.stem(token).lower()
-                for token in word_tokenize(text, language=self._LANGUAGE)
-            )
-            for text in texts
-        ]
+        keyword_stems = [Stemmer.stem(keyword) for keyword in keywords]
+        text_stems = [Stemmer.stem(text) for text in texts]
         
         vectorizer = TfidfVectorizer(stop_words=list(self._STOPWORDS))
         tfidf_matrix = vectorizer.fit_transform(text_stems)

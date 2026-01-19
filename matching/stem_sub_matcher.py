@@ -3,7 +3,7 @@ from matching.sub_matcher import SubMatcher
 from dataclasses import dataclass
 from typing import List
 from nltk.stem import SnowballStemmer
-from nltk import word_tokenize
+from stemmer import Stemmer
 
 
 class StemSubMatcher(SubMatcher):
@@ -24,17 +24,8 @@ class StemSubMatcher(SubMatcher):
     _STEMMER: SnowballStemmer = SnowballStemmer(_LANGUAGE)
 
     def match(self, keywords: List[str], texts: List[str], parameters: Parameters) -> Result:  # type: ignore
-        keyword_stems = [
-            self._STEMMER.stem(keyword).lower()
-            for keyword in keywords
-        ]
-        text_stems = [
-            " ".join(
-                self._STEMMER.stem(token).lower()
-                for token in word_tokenize(text, language=self._LANGUAGE)
-            )
-            for text in texts
-        ]
+        keyword_stems = [Stemmer.stem(keyword) for keyword in keywords]
+        text_stems = [Stemmer.stem(text) for text in texts]
         
         matches = []
         for text_stem in text_stems:
