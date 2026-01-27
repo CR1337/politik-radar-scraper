@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Streamlit: Attach Debugger",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/.venv/bin/streamlit",  // or "streamlit.exe" on Windows
+      "args": ["run", "app.py"],
+      "console": "integratedTerminal",
+      "env": {
+        "STREAMLIT_DEBUG": "1"
+      },
+      "justMyCode": true
+    }
+  ]
+}

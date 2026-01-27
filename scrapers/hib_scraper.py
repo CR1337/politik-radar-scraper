@@ -3,7 +3,6 @@ from article import Article
 from scrapers.scraper import Scraper
 from dataclasses import dataclass
 from datetime import datetime
-import requests
 from bs4 import BeautifulSoup 
 from progress import Progress
 
@@ -23,7 +22,7 @@ class HibScraper(Scraper):
             offset=0,
             limit=self._LIMIT
         )
-        entries = self._scrape_entries(entry_parameters)
+        entries = self._scrape_entries(entry_parameters, progress)
         articles = self._scrape_articles(entries, progress)
         return self._filter_dates(articles, parameters)
 
@@ -75,7 +74,7 @@ class HibScraper(Scraper):
         url: str
         timestamp: datetime
     
-    def _scrape_entries_with_url(self, url: str, parameters: _EntryParameters) -> List[_Entry]:
+    def _scrape_entries_with_url(self, url: str, parameters: _EntryParameters, progress: Progress) -> List[_Entry]:
         entry_length = -1
         n_iterations = 0
         entries = []
@@ -85,12 +84,9 @@ class HibScraper(Scraper):
             entry_length = len(entries)
             parameters.offset = n_iterations * self._LIMIT
 
-            response = requests.get(
-                url=url,
-                params=parameters.to_dict()
-            )
-            response.raise_for_status()
-            html = response.text
+            html = self._get(self._URL, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE}", parameters=parameters.to_dict())
+            if html is None:
+                return []
 
             soup = BeautifulSoup(html, "html.parser")
             containers = soup.find_all("div", class_="bt-listenteaser")
@@ -125,9 +121,9 @@ class HibScraper(Scraper):
 
         return entries
 
-    def _scrape_entries(self, parameters: _EntryParameters) -> List[_Entry]:
-        entries = self._scrape_entries_with_url(self._URL, parameters)
-        entries.extend(self._scrape_entries_with_url(self._ARCIVE_URL, parameters))
+    def _scrape_entries(self, parameters: _EntryParameters, progress: Progress) -> List[_Entry]:
+        entries = self._scrape_entries_with_url(self._URL, parameters, progress)
+        entries.extend(self._scrape_entries_with_url(self._ARCIVE_URL, parameters, progress))
         return entries
     
     def _content_to_markdown(self, content) -> str:
@@ -154,18 +150,24 @@ class HibScraper(Scraper):
     def _scrape_articles(self, entries: List[_Entry], progress: Progress) -> List[Article]:
         articles = []
         for entry in progress.start_iteration(entries, total=len(entries), desc="Scraping 'Heute im Bundestag' Artikel"):
-            response=requests.get(entry.url)
-            response.raise_for_status()
-            html=response.text
+            html = self._get(entry.url, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE} bei Artikel {entry.title}")
+            if html is None:
+                return []
 
             soup = BeautifulSoup(html, "html.parser")
             article_div=soup.find("div", class_="bt-artikel__article")
             assert article_div is not None
             content = self._content_to_markdown(article_div).strip()
 
+            header_line = soup.find("span", class_="bt-dachzeile")
+            assert header_line is not None
+            header_string = header_line.text
+            medium_organisation = header_string.split("—")[0].strip()
+
             articles.append(Article(
                 timestamp=entry.timestamp,
                 title=entry.title,
+                medium_organisation=medium_organisation,
                 content=content,
                 link=entry.url,
                 source=self.SOURCE

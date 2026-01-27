@@ -7,6 +7,7 @@ from datetime import datetime
 class Article:
     timestamp: datetime
     title: str
+    medium_organisation: str
     content: str
     link: str
     source: str

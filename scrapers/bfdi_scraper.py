@@ -4,7 +4,6 @@ from scrapers.scraper import Scraper
 from dataclasses import dataclass
 from datetime import datetime
 from progress import Progress
-import requests
 from bs4 import BeautifulSoup 
 
 
@@ -17,9 +16,10 @@ class BfdiScraper(Scraper):
         pass
 
     def scrape(self, parameters: Scraper.Parameters, progress: Progress) -> List[Article]:
-        response = requests.get(self._URL)
-        response.raise_for_status()
-        html = response.text
+        html = self._get(self._URL, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE}")
+        if html is None:
+            return []
+
         soup = BeautifulSoup(html, "html.parser")
 
         table = soup.find("table", class_="textualData links")
@@ -48,9 +48,10 @@ class BfdiScraper(Scraper):
 
         articles = []
         for timestamp, title, link in progress.start_iteration(entries, total=len(entries), desc="Scraping BfDI articles"):
-            response = requests.get(link)
-            response.raise_for_status()
-            html = response.text
+            html = self._get(link, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE} bei Artikel: {title}")
+            if html is None:
+                continue
+        
             soup = BeautifulSoup(html, "html.parser")
 
             main = soup.find("main", class_="main row")
@@ -64,6 +65,7 @@ class BfdiScraper(Scraper):
             articles.append(Article(
                 timestamp=timestamp,
                 title=title,
+                medium_organisation=self.SOURCE,
                 content=content,
                 link=link,
                 source=self.SOURCE

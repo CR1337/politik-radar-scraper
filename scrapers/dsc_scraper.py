@@ -3,7 +3,6 @@ from article import Article
 from scrapers.scraper import Scraper
 from dataclasses import dataclass
 from datetime import datetime
-import requests
 from bs4 import BeautifulSoup 
 from bs4.element import Tag
 from progress import Progress
@@ -18,9 +17,9 @@ class DscScraper(Scraper):
         pass
 
     def scrape(self, parameters: Scraper.Parameters, progress: Progress) -> List[Article]:
-        response = requests.get(self._URL)
-        response.raise_for_status()
-        html = response.text
+        html = self._get(self._URL, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE}")
+        if html is None:
+            return []
 
         soup = BeautifulSoup(html, "html.parser")
 
@@ -57,9 +56,10 @@ class DscScraper(Scraper):
 
         articles = []
         for title, link, timestamp in progress.start_iteration(entries, total=len(entries), desc="Scraping DSC articles"):
-            response = requests.get(link)
-            response.raise_for_status()
-            html = response.text
+            html = self._get(self._URL, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE} bei Artikel: {title}")
+            if html is None:
+                return []
+            
             soup = BeautifulSoup(html, "html.parser")
 
             div = soup.find("div", class_="wrapperText")
@@ -72,6 +72,7 @@ class DscScraper(Scraper):
             articles.append(Article(
                 timestamp=timestamp,
                 title=title,
+                medium_organisation=self.SOURCE,
                 content=content,
                 link=link, 
                 source=self.SOURCE

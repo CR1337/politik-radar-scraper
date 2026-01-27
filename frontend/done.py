@@ -3,7 +3,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
-from article_serializer import ArticleSerializer
+from article_accumulator import ArticleAccumulator
+from dataframe_serializer import DataframeSerializer
 
 
 MAX_INT: int = sys.maxsize * 2 + 1
@@ -23,7 +24,7 @@ def done():
         for msg in progress.error_messages:
             st.write(msg)
 
-    metadata = ArticleSerializer.Metadata(
+    metadata = DataframeSerializer.Metadata(
         datetime.now(),
         keywords, 
         cos_threshold=st.session_state["cosine_threshold"]
@@ -52,33 +53,39 @@ def done():
         hide_index=True
     )
 
-    serializer = ArticleSerializer()
+    article_accumulator = ArticleAccumulator()
     
-    df = serializer.to_dataframe(filter_result, keywords, True)
+    df, bool_columns = article_accumulator.to_dataframe(filter_result, keywords, True)
+    df["select"] = df[bool_columns].any(axis=1).astype(bool)
+    ordered_columns = ["select"] + [col for col in df.columns if col != "select"]
+    df = df[ordered_columns]
+
     st.write("Ergebnisse")
-    st.dataframe(
+    edited_df = st.data_editor(
         df,
         width="content",
         height="stretch",
         column_config={
-            "timestamp": st.column_config.DateColumn("Datum"),
-            "title": st.column_config.TextColumn("Titel"),
-            "content": st.column_config.TextColumn("Text"),
-            "link": st.column_config.LinkColumn("Link"),
-            "source": st.column_config.TextColumn("Quelle")
+            "select": st.column_config.CheckboxColumn("Auswählen"),
+            "timestamp": st.column_config.TextColumn("Datum", disabled=True),
+            "title": st.column_config.TextColumn("Titel", disabled=True),
+            "medium_organisation": st.column_config.TextColumn("Medium/Organisation", disabled=True),
+            "content": st.column_config.TextColumn("Text", disabled=True),
+            "link": st.column_config.LinkColumn("Link", disabled=True),
+            "source": st.column_config.TextColumn("Quelle", disabled=True)
         } | {
             f"{keyword} - exact match": st.column_config.CheckboxColumn(
-                f"{keyword} - Exaktes Match"
+                f"{keyword} - Exaktes Match", disabled=True
             )
             for keyword in keywords
         } | {
             f"{keyword} - stem match": st.column_config.CheckboxColumn(
-                f"{keyword} - Wortstamm Match"
+                f"{keyword} - Wortstamm Match", disabled=True
             )
             for keyword in keywords
         } | {
             f"{keyword} - similarity match": st.column_config.CheckboxColumn(
-                f"{keyword} - Ähnlichkeitsmatch"
+                f"{keyword} - Ähnlichkeitsmatch", disabled=True
             )
             for keyword in keywords
         } | {
@@ -93,6 +100,8 @@ def done():
         hide_index=True
     )
 
+    selected_df = edited_df[edited_df["select"]].drop("select", axis=1)
+
     options = ["Metadaten", "Match-Ergebnisse"]
     selection = st.segmented_control(
         "Zu Datei hinzufügen",
@@ -103,10 +112,12 @@ def done():
     add_metadata = options[0] in selection
     add_match_results = options[1] in selection
 
+    serializer = DataframeSerializer()
+
     st.download_button(
         "CSV-Datei herunterladen",
         data=serializer.to_csv(
-            filter_result, 
+            selected_df, 
             metadata,
             add_metadata,
             add_match_results
@@ -119,7 +130,7 @@ def done():
     st.download_button(
         "XLSX-Datei herunterladen",
         data=serializer.to_xlsx(
-            filter_result, 
+            selected_df, 
             metadata,
             add_metadata,
             add_match_results

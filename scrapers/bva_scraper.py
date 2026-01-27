@@ -3,7 +3,6 @@ from article import Article
 from scrapers.scraper import Scraper
 from dataclasses import dataclass
 from datetime import datetime
-import requests
 from bs4 import BeautifulSoup 
 from progress import Progress
 
@@ -17,9 +16,9 @@ class BvaScraper(Scraper):
         pass
 
     def scrape(self, parameters: Scraper.Parameters, progress: Progress) -> List[Article]:
-        response = requests.get(self._URL)
-        response.raise_for_status()
-        html = response.text
+        html = self._get(self._URL, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE}")
+        if html is None:
+            return []
 
         soup = BeautifulSoup(html, "html.parser")
 
@@ -44,6 +43,7 @@ class BvaScraper(Scraper):
             articles.append(Article(
                 datetime(year=year, month=month, day=day),
                 title=title,
+                medium_organisation=self.SOURCE,
                 content=content,
                 link=link, 
                 source=self.SOURCE
