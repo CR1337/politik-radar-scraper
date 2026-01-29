@@ -162,7 +162,7 @@ class HibScraper(Scraper):
             header_line = soup.find("span", class_="bt-dachzeile")
             assert header_line is not None
             header_string = header_line.text
-            medium_organisation = header_string.split("—")[0].strip()
+            medium_organisation = header_string.split("—")[0].strip().split(" ")[0].strip().replace(",", "")
 
             articles.append(Article(
                 timestamp=entry.timestamp,

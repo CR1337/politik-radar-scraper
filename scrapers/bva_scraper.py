@@ -9,7 +9,7 @@ from progress import Progress
 
 class BvaScraper(Scraper):
 
-    SOURCE: str = "Bundesverwaltungsamt"
+    SOURCE: str = "BVA"
 
     @dataclass
     class Parameters(Scraper.Parameters):

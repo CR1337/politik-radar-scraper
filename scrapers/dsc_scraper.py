@@ -10,7 +10,7 @@ from progress import Progress
 
 class DscScraper(Scraper):
 
-    SOURCE: str = "Digital Services Coordinator"
+    SOURCE: str = "DSC"
 
     @dataclass
     class Parameters(Scraper.Parameters):
