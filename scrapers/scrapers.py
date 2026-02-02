@@ -5,6 +5,7 @@ from scrapers.nkr_scraper import NkrScraper
 from scrapers.bfdi_scraper import BfdiScraper
 from scrapers.bva_scraper import BvaScraper
 from scrapers.dsc_scraper import DscScraper
+from scrapers.bsi_scraper import BsiScraper
 
 
 ALL_SCRAPERS: Dict[str, Scraper] = {
@@ -12,5 +13,6 @@ ALL_SCRAPERS: Dict[str, Scraper] = {
     "Normenkontrollrat": NkrScraper(),
     "BfDI": BfdiScraper(),
     "BVA": BvaScraper(),
-    "DSC": DscScraper()
+    "DSC": DscScraper(),
+    "BSI": BsiScraper()
 }
