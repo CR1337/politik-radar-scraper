@@ -12,4 +12,9 @@ class Article:
     link: str
     source: str
 
+    def __eq__(self, other) -> bool:
+        return self.title == other.title
+    
+    def __hash__(self) -> int:
+        return hash(self.title)
     

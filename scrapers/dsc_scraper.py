@@ -56,7 +56,7 @@ class DscScraper(Scraper):
 
         articles = []
         for title, link, timestamp in progress.start_iteration(entries, total=len(entries), desc="Scraping DSC articles"):
-            html = self._get(self._URL, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE} bei Artikel: {title}")
+            html = self._get(link, progress, f"Fehler beim Scrapen der Quelle: {self.SOURCE} bei Artikel: {title}")
             if html is None:
                 return []
             
@@ -67,7 +67,7 @@ class DscScraper(Scraper):
 
             ps = div.find_all("p", class_=False)
             assert ps
-            content = "\n\n".join(p.text.strip() for p in ps)
+            content = "\n\n".join([p.text.strip() for p in ps][0])
 
             articles.append(Article(
                 timestamp=timestamp,

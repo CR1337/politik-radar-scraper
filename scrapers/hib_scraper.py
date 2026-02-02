@@ -24,7 +24,11 @@ class HibScraper(Scraper):
         )
         entries = self._scrape_entries(entry_parameters, progress)
         articles = self._scrape_articles(entries, progress)
-        return self._filter_dates(articles, parameters)
+        articles = self._filter_dates(articles, parameters)
+
+        articles = list(set(articles))
+
+        return articles
 
     _LIMIT: int = 20
     _MS_PER_S: int = 1_000
@@ -158,6 +162,7 @@ class HibScraper(Scraper):
             article_div=soup.find("div", class_="bt-artikel__article")
             assert article_div is not None
             content = self._content_to_markdown(article_div).strip()
+            content = content.split("\n")[0]
 
             header_line = soup.find("span", class_="bt-dachzeile")
             assert header_line is not None

@@ -60,7 +60,7 @@ class BfdiScraper(Scraper):
             ps = main.find_all("p")
             assert ps
 
-            content = "\n\n".join(p.text for p in ps)
+            content = "\n\n".join([p.text for p in ps][:2])
 
             articles.append(Article(
                 timestamp=timestamp,
