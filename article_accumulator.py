@@ -72,7 +72,5 @@ class ArticleAccumulator:
         # Concatenate all new columns at once
         df = pd.concat([df, pd.DataFrame(new_columns)], axis=1)
 
-        df = df[df[bool_columns].any(axis=1)]
-
         return df, bool_columns
     
