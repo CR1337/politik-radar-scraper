@@ -114,31 +114,45 @@ def done():
 
     serializer = DataframeSerializer()
 
-    st.download_button(
-        "CSV-Datei herunterladen",
-        data=serializer.to_csv(
-            selected_df, 
-            metadata,
-            add_metadata,
-            add_match_results
-        ),
-        file_name="data.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
+    if len(selected_df) > 0:
+        st.download_button(
+            "CSV-Datei herunterladen",
+            data=serializer.to_csv(
+                selected_df, 
+                metadata,
+                add_metadata,
+                add_match_results
+            ),
+            file_name="data.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
-    st.download_button(
-        "XLSX-Datei herunterladen",
-        data=serializer.to_xlsx(
-            selected_df, 
-            metadata,
-            add_metadata,
-            add_match_results
-        ),
-        file_name="data.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True
-    )
+        st.download_button(
+            "XLSX-Datei herunterladen",
+            data=serializer.to_xlsx(
+                selected_df, 
+                metadata,
+                add_metadata,
+                add_match_results
+            ),
+            file_name="data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
+    else:
+        st.button(
+            "CSV-Datei herunterladen",
+            disabled=True,
+            use_container_width=True
+        )
+        st.button(
+            "XLSX-Datei herunterladen",
+            disabled=True,
+            use_container_width=True
+        )
+
 
     if st.button(
         label="Neue Datenabfrage",
