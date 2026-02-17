@@ -9,6 +9,8 @@ from scrapers.bsi_scraper import BsiScraper
 from scrapers.bna_scraper import BnaScraper
 from scrapers.diw_scraper import DiwScraper
 from scrapers.bmds_scraper import BmdsScraper
+from scrapers.bmi_scraper import BmiScraper
+from scrapers.bmwe_scraper import BmweScraper
 
 
 ALL_SCRAPERS: Dict[str, Scraper] = {
@@ -20,5 +22,7 @@ ALL_SCRAPERS: Dict[str, Scraper] = {
     "BSI": BsiScraper(),
     "BNA": BnaScraper(),
     "DIW": DiwScraper(),
-    "BMDS": BmdsScraper()
+    "BMDS": BmdsScraper(),
+    "BMI": BmiScraper(),
+    "BMWE": BmweScraper()
 }

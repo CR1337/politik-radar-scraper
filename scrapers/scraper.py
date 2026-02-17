@@ -42,6 +42,27 @@ class Scraper(ABC):
             a for a in articles
             if parameters.start_date <= a.timestamp <= parameters.end_date
         ]
+    
+    def _content_to_markdown(self, content) -> str:
+        text_parts = []
+
+        for child in content.children:
+            if child.name == "a":
+                label = child.get_text(strip=True)
+                href = child.get("href", "")
+                text_parts.append(f"[{label}]({href})")
+
+            elif child.name in ("p", "div", "strong", "span", "abbr"):
+                text_parts.append(self._content_to_markdown(child).strip() + "\n")
+
+            elif child.name is None:  # NavigableString
+                text_parts.append(child)
+
+            else:
+                # recursively process any other tag (e.g., <i>)
+                text_parts.append(self._content_to_markdown(child))
+
+        return "".join(text_parts)
 
 
     @abstractmethod

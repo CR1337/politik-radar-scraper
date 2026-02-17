@@ -129,27 +129,6 @@ class HibScraper(Scraper):
         entries = self._scrape_entries_with_url(self._URL, parameters, progress)
         entries.extend(self._scrape_entries_with_url(self._ARCIVE_URL, parameters, progress))
         return entries
-    
-    def _content_to_markdown(self, content) -> str:
-        text_parts = []
-
-        for child in content.children:
-            if child.name == "a":
-                label = child.get_text(strip=True)
-                href = child.get("href", "")
-                text_parts.append(f"[{label}]({href})")
-
-            elif child.name in ("p", "div"):
-                text_parts.append(self._content_to_markdown(child).strip() + "\n")
-
-            elif child.name is None:  # NavigableString
-                text_parts.append(child)
-
-            else:
-                # recursively process any other tag (e.g., <i>)
-                text_parts.append(self._content_to_markdown(child))
-
-        return "".join(text_parts)
 
     def _scrape_articles(self, entries: List[_Entry], progress: Progress) -> List[Article]:
         articles = []
