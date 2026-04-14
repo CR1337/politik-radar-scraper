@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 class BmfScraper(Scraper):
 
-    SOURCE: str = "Bundesfinanzministerium"
+    SOURCE: str = "BMF"
 
     @dataclass
     class Parameters(Scraper.Parameters):

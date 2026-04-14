@@ -6,9 +6,9 @@ from progress import Progress
 from scrapers.scrape_rss import scrape_rss
 
 
-class BmbfsfjRssScraper(Scraper):
+class EuKommissionScraper(Scraper):
 
-    SOURCE: str = "BMBFSFJ"
+    SOURCE: str = "EU Kommission"
 
     @dataclass
     class Parameters(Scraper.Parameters):
@@ -17,13 +17,15 @@ class BmbfsfjRssScraper(Scraper):
     def scrape(
         self, parameters: Scraper.Parameters, progress: Progress
     ) -> List[Article]:
-        datestring = "%a, %d %b %Y %H:%M:%S %Z"
+        datestring = "%a, %d %b %Y %H:%M:%S %z"
         articles = scrape_rss(self._URL, self.SOURCE, datestring, progress)
 
         return self._filter_dates(articles, parameters)
 
-    _URL_PREFIX: str = "https://www.bmbfsfj.bund.de/"
-    _URL: str = f"{_URL_PREFIX}service/rss/bmbfsfj/108854/feed.rss"
+    _URL_PREFIX: str = "https://commission.europa.eu/"
+    _URL: str = (
+        f"{_URL_PREFIX}node/33506/rss_en"
+    )
     _GERMAN_MONTHS: List[str] = [
         "",
         "Januar",

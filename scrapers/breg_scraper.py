@@ -12,7 +12,7 @@ import html as HTML
 
 class BregScraper(Scraper):
 
-    SOURCE: str = "Bundesregierung"
+    SOURCE: str = "BREG"
 
     @dataclass
     class Parameters(Scraper.Parameters):

@@ -8,7 +8,7 @@ from scrapers.scrape_rss import scrape_rss
 
 class BmwsbScraper(Scraper):
 
-    SOURCE: str = "BMVG"
+    SOURCE: str = "BMWSB"
 
     @dataclass
     class Parameters(Scraper.Parameters):

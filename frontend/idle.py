@@ -3,7 +3,7 @@ import json
 from typing import List
 from datetime import datetime, time, timedelta
 from thread import ThreadWithResult
-from scrapers.scrapers import ALL_SCRAPERS
+from scrapers.scrapers import ALL_SCRAPERS, BUNDESMINISTERIEN, PRESSEORGANE, SONSTIGE_INSTUTIONEN, BUNDESTAG,EUROPA_INTERNATIONAL
 from scrapers.scraper import Scraper
 from matching.matcher import (
     Matcher,
@@ -15,6 +15,7 @@ from matching.matcher import (
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 from matching.match_filter import MatchFilter
 import traceback
+from bs4 import BeautifulSoup
 
 
 KEYWORDS_FILENAME: str = "keywords.json"
@@ -23,7 +24,7 @@ WEEK: int = 7  # days
 
 @st.cache_data
 def get_keywords() -> List[str]:
-    with open(KEYWORDS_FILENAME, "r") as file:
+    with open(KEYWORDS_FILENAME, "r", encoding="utf-8") as file:
         keyword_data = json.load(file)
     all_keywords = []
     for keywords in keyword_data["topics"].values():
@@ -124,11 +125,25 @@ def _start_workload(
     thread.start()
     st.rerun()
 
+def source_select(options,name):
+    container = st.container()
+    all = st.checkbox("alle auswählen",
+                        value = True,
+                        key=f"{name}_checkbox")
+    if all:
+        selection = container.multiselect(f"{name}: ",
+                                            options,options,
+                                            key=f"{name}_multiselect1")
+    else:
+        selection =  container.multiselect(f"{name}: ",
+                                           options,
+                                           key=f"{name}_multiselect2")
+    return selection
 
 def idle():
     col1, col2 = st.columns([1, 40])
     with col1:
-        st.image("img/icon-funk.JPG", width=50)
+        st.image("img/funk.png")
 
     with col2:
         st.title("politik.radar Scraper")
@@ -139,7 +154,7 @@ def idle():
         default=keyword_options,
         accept_new_options=True,
     )
-
+    ''' alte Source selection
     source_options = list(ALL_SCRAPERS.keys())
     source_selection = st.segmented_control(
         label="Quellen",
@@ -147,6 +162,28 @@ def idle():
         default=source_options,
         selection_mode="multi",
     )
+    '''
+    source_col1,source_col2,source_col3,source_col4,source_col5 = st.columns([1,1,1,1,1])
+    with source_col1:
+        bundesministerien_selection = source_select(BUNDESMINISTERIEN,"Bundesministerien")
+    with source_col2:
+        presseorgane_selection = source_select(PRESSEORGANE,"Presseorgane")
+    with source_col3:     
+        sonstiges_selection = source_select(SONSTIGE_INSTUTIONEN,"Behörden und sonstige Institutionen")
+    with source_col4:
+       bundestag_selection = source_select(BUNDESTAG,"Bundestag")
+    with source_col5:
+       europa_international_selection = source_select(EUROPA_INTERNATIONAL,"Europa/international")
+    
+    uploaded_files = st.file_uploader(
+        "Tagesspiegel Background hochladen", accept_multiple_files=True, type=["html", "htm"]
+    )
+    st.session_state["uploaded_files"] = uploaded_files
+
+
+    source_selection = bundesministerien_selection + presseorgane_selection + \
+        sonstiges_selection + bundestag_selection + europa_international_selection
+    
     selected_scrapers = [ALL_SCRAPERS[s] for s in source_selection]
 
     match_options = ["Exakt", "Wortstamm", "Ähnlichkeit"]

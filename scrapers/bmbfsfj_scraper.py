@@ -9,7 +9,7 @@ from progress import Progress
 
 class BmbfsfjScraper(Scraper):
 
-    SOURCE: str = "Bmbfsfj"
+    SOURCE: str = "BMBFSFJ"
 
     @dataclass
     class Parameters(Scraper.Parameters):
